@@ -38,7 +38,8 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
-            if self.email.lower() == current_app.config['FLASKY_ADMIN'].lower():
+            print([admin.lower() for admin in current_app.config['FLASKY_ADMIN']])
+            if self.email.lower() in [admin.lower() for admin in current_app.config['FLASKY_ADMIN']]:
                 self.role = Role.query.filter_by(permissions=0x1ff).first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
@@ -132,7 +133,10 @@ class Permission(object):
     UPDATE_BOOK_INFORMATION = 0x20
     ADD_BOOK = 0x40
     DELETE_BOOK = 0x80
-    ADMINISTER = 0x100
+    ADD_USER = 0x100
+    DELETE_USER = 0x400
+    EDIT_EMAIL = 0x800
+    ADMINISTER = 0xffffffff
 
 
 class Role(db.Model):
@@ -153,7 +157,7 @@ class Role(db.Model):
                           Permission.BORROW_BOOK |
                           Permission.WRITE_COMMENT |
                           Permission.DELETE_OTHERS_COMMENT, False),
-            'Administrator': (0x1ff, False)
+            'Administrator': (0xffffffff, False)
         }
         for r in roles:
             role = Role.query.filter_by(name=r).first()
