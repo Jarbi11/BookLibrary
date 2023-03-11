@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from app import db
-from app.models import User
+from app.models import User, Permission
 from flask import render_template, url_for, flash, redirect, request
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
@@ -43,14 +43,19 @@ def register():
     return render_template('register.html', form=form, title=u"新用户注册")
 
 
-@auth.route('/change_password/', methods=['GET', 'POST'])
+@auth.route('/change_password/<int:user_id>', methods=['GET', 'POST'])
 @login_required
-def change_password():
+def change_password(user_id):
     form = ChangePasswordForm()
+    user = db.session.query(User).filter(User.id == user_id).first()
     if form.validate_on_submit():
-        current_user.password = form.new_password.data
-        db.session.add(current_user)
+        if not current_user.can(Permission.UPDATE_OTHERS_INFORMATION) and \
+                current_user.id != user.id:
+            flash(u'密码更新失败!', 'error')
+            return redirect(url_for('user.detail', user_id=user.id))
+        user.password = form.new_password.data
+        db.session.add(user)
         db.session.commit()
         flash(u'密码更新成功!', 'info')
-        return redirect(url_for('user.detail', user_id=current_user.id))
-    return render_template('user_edit.html', form=form, user=current_user, title=u"修改密码")
+        return redirect(url_for('user.detail', user_id=user.id))
+    return render_template('user_edit.html', form=form, user=user, title=u"修改密码")

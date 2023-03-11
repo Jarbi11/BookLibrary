@@ -16,6 +16,16 @@
                 <td><a href="{{ url_for('user.detail',user_id=user.id) }}">{{ user.name }}</a></td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.logs.count() }}</td>
+                {%- if current_user.id == user.id or current_user.can(Permission.UPDATE_OTHERS_INFORMATION) -%}
+                <td>
+                    <div class="btn-group">
+                        <a class="btn btn-info" href="{{url_for('user.edit',user_id=user.id) }}">编辑信息</a>
+                        <a type="button" class="btn btn-warning" href="{{ url_for('auth.change_password',user_id=user.id) }}">修改密码</a>
+                        <a type="button" class="btn btn-danger" href="{a{url_for()}a}">删除用户</a>
+                    </div>
+                </td>
+                {% endif %}
+
             </tr>
         {% endfor %}
         </tbody>

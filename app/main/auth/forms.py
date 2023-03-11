@@ -31,14 +31,13 @@ class RegistrationForm(FlaskForm):
 
 
 class ChangePasswordForm(FlaskForm):
-    old_password = PasswordField(u'旧密码', validators=[DataRequired(message=u"该项忘了填写了!")])
     new_password = PasswordField(u'新密码', validators=[DataRequired(message=u"该项忘了填写了!"),
                                                      EqualTo('confirm_password', message=u'密码必须匹配'),
                                                      Length(6, 32)])
     confirm_password = PasswordField(u'确认新密码', validators=[DataRequired(message=u"该项忘了填写了!")])
     submit = SubmitField(u"保存密码")
 
-    def validate_old_password(self, filed):
-        from flask_login import current_user
-        if not current_user.verify_password(filed.data):
-            raise ValidationError(u'原密码错误')
+    # def validate_old_password(self, filed):
+    #     from flask_login import current_user
+    #     if not current_user.verify_password(filed.data):
+    #         raise ValidationError(u'原密码错误')
