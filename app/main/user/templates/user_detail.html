@@ -26,8 +26,11 @@
                 </h1>
 
                 <p>Email: {{ user.email }}</p>
-                {% if user.role%}
-                    <p>用户权限: {{ user.role.name}}</p>
+                {% if current_user.can(Permission.UPDATE_OTHERS_INFORMATION) %}
+                    <a href="{{url_for('user.change_role',user_id=user.id)}}" data-toggle="tooltip"
+                    data-placement="bottom" title="点击修改用户权限">
+                        <p>用户权限: {{ user.role.name}}</p>
+                    </a>
                 {% endif %}
                 <p>加入日期: {{ user.member_since.strftime('%d %B %Y - %H:%M:%S') }}</p>
                 {% if current_user.id==user.id or current_user.can(Permission.UPDATE_OTHERS_INFORMATION) %}

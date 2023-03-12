@@ -5,6 +5,7 @@
         <h1 class="page-header">{{ title }}</h1>
         <thead>
         <tr>
+            <th></th>
             <th>用户名</th>
             <th>用户邮箱</th>
             <th>用户借书册次</th>
@@ -13,7 +14,14 @@
         <tbody>
         {% for user in users %}
             <tr class="animated fadeIn delay-{{ loop.index0 }}">
-                <td><a href="{{ url_for('user.detail',user_id=user.id) }}">{{ user.name }}</a></td>
+                <td>
+                    {% if user.avatar_url() %}
+                    <div class="media-object avatar avatar-mini"
+                         style="background-image: url({{ user.avatar_url() }})"></div>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('user.detail',user_id=user.id) }}">{{ user.name }}</a></td>
                 <td>{{ user.email }}</td>
                 <td>{{ user.logs.count() }}</td>
                 {%- if current_user.id == user.id or current_user.can(Permission.UPDATE_OTHERS_INFORMATION) -%}

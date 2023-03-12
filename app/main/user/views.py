@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 from flask import render_template, url_for, flash, redirect, request, abort, g
 from flask_login import login_required, current_user
-from app.models import User, Log, Permission
-from .forms import EditProfileForm, AvatarEditForm, AvatarUploadForm
+from app.models import User, Log, Permission, Role
+from .forms import EditProfileForm, AvatarEditForm, AvatarUploadForm, RoleChangeForm
+from ..decorators import admin_required, permission_required
 from app import db, avatars
 from . import user
 import json
@@ -84,3 +85,22 @@ def avatar(user_id):
                                avatar_upload_form=avatar_upload_form, title=u"更换头像")
     else:
         abort(403)
+
+
+@user.route('/<int:user_id>/role_change/', methods=['GET', 'POST'])
+@login_required
+def change_role(user_id):
+    if not current_user.can(Permission.UPDATE_OTHERS_INFORMATION):
+        abort(403)
+    else:
+        the_user = User.query.get_or_404(user_id)
+        role_change_form = RoleChangeForm()
+        if role_change_form.validate_on_submit():
+            the_user.role = Role.query.filter(Role.name == role_change_form.role.data).first()
+            the_user.role_id = the_user.role.id
+            db.session.add(the_user)
+            db.session.commit()
+            flash(u"用户权限更新成功！", "success")
+            return  redirect(url_for("user.detail", user_id=user_id))
+        return render_template('role_change.html', user=the_user, role_change_form=role_change_form,
+                               title=u"更改用户权限")

@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, RadioField
 from wtforms.validators import Length, DataRequired, URL
 from flask_pagedown.fields import PageDownField
 from flask_wtf.file import FileField, FileAllowed
@@ -22,3 +22,8 @@ class AvatarEditForm(FlaskForm):
 
 class AvatarUploadForm(FlaskForm):
     avatar = FileField('', validators=[FileAllowed(avatars, message=u"只允许上传图片")])
+
+
+class RoleChangeForm(FlaskForm):
+    role = RadioField(choices=[("User", u"User"), ("Moderator", u"Moderator"), ("Administrator", u"Administrator")])
+    submit = SubmitField(u"保存更改")
