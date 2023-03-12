@@ -41,8 +41,8 @@
                         <li {%- if request.path == url_for('book.tags') %} class="active"{%- endif -%} ><a
                                 href="{{ url_for('book.tags') }}">标签</a></li>
                         {%- if current_user.can(Permission.ADD_BOOK) -%}
-                            <li {%- if request.path == url_for('book.add') %} class="active"{%- endif -%} ><a
-                                    href="{{ url_for('book.add') }}">添加新书</a></li>
+                            <li {%- if request.path == url_for('book.get_book_information_from_douban') %} class="active"{%- endif -%} ><a
+                                    href="{{ url_for('book.get_book_information_from_douban') }}">添加新书</a></li>
                         {%- endif -%}
                         <li {%- if request.path == url_for('user.index') %} class="active"{%- endif -%} ><a
                                 href="{{ url_for('user.index') }}">已注册用户</a></li>

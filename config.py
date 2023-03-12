@@ -15,4 +15,6 @@ FLASKY_ADMIN = [
     'admin@library.com',
 ]
 
+DOUBAN_TRANS_SERVER = "a.com:1111"
+
 SQLALCHEMY_TRACK_MODIFICATIONS = False

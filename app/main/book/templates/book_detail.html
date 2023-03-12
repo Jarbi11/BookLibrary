@@ -22,6 +22,12 @@
                 {%- if book.author -%}
                     <li class="list-group-item">作者: {{ book.author }}</li>
                 {%- endif -%}
+                {%- if book.douban_url -%}
+                <li class="list-group-item" >豆瓣链接: <a href={{book.douban_url}}>{{ book.douban_url}}</a></li>
+                {%- endif -%}
+                {%- if book.douban_rating -%}
+                <li class="list-group-item">豆瓣评分: {{ book.douban_rating}}</li>
+                {%- endif -%}
                 {%- if book.translator -%}
                     <li class="list-group-item">译者: {{ book.translator }}</li>
                 {%- endif -%}

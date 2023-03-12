@@ -8,19 +8,19 @@ from wtforms.validators import Length, DataRequired, Regexp
 
 
 class EditBookForm(FlaskForm):
-    isbn = StringField(u"ISBN",
-                       validators=[DataRequired(message=u"该项忘了填写了!"),
-                                   Regexp('[0-9]{13,13}', message=u"ISBN必须是13位数字")])
     title = StringField(u"书名",
                         validators=[DataRequired(message=u"该项忘了填写了!"), Length(1, 128, message=u"长度为1到128个字符")])
-    origin_title = StringField(u"原作名", validators=[Length(0, 128, message=u"长度为0到128个字符")])
-    subtitle = StringField(u"副标题", validators=[Length(0, 128, message=u"长度为0到128个字符")])
+    isbn = StringField(u"ISBN",
+                       validators=[DataRequired(message=u"该项忘了填写了!"),
+                                   Regexp('[0-9]{8,13}', message=u"ISBN必须是8-13位数字")])
     author = StringField(u"作者", validators=[Length(0, 128, message=u"长度为0到64个字符")])
+    image = StringField(u"图片地址", validators=[Length(0, 128, message=u"长度为0到128个字符")])
     translator = StringField(u"译者",
                              validators=[Length(0, 64, message=u"长度为0到64个字符")])
     publisher = StringField(u"出版社", validators=[Length(0, 64, message=u"长度为0到64个字符")])
-    image = StringField(u"图片地址", validators=[Length(0, 128, message=u"长度为0到128个字符")])
     pubdate = StringField(u"出版日期", validators=[Length(0, 32, message=u"长度为0到32个字符")])
+    douban_url = StringField(u"豆瓣链接", validators=[Length(0, 128, message=u"长度为0到128个字符")])
+    douban_rating = StringField(u"豆瓣评分", validators=[Length(0, 32, message=u"长度为0到32个字符")])
     tags = StringField(u"标签", validators=[Length(0, 128, message=u"长度为0到128个字符")])
     pages = IntegerField(u"页数")
     price = StringField(u"定价", validators=[Length(0, 64, message=u"长度为0到32个字符")])
@@ -29,6 +29,13 @@ class EditBookForm(FlaskForm):
     summary = PageDownField(u"内容简介")
     catalog = PageDownField(u"目录")
     submit = SubmitField(u"保存更改")
+
+
+class GetDoubanInfoForm(FlaskForm):
+    title = StringField(u"书名",
+                        validators=[Length(1, 128, message=u"长度为1到128个字符")])
+    isbn = StringField(u"ISBN")
+    submit = SubmitField(u"从豆瓣加载信息")
 
 
 class AddBookForm(EditBookForm):
@@ -40,5 +47,3 @@ class AddBookForm(EditBookForm):
 class SearchForm(FlaskForm):
     search = StringField(validators=[DataRequired()])
     submit = SubmitField(u"搜索")
-
-
