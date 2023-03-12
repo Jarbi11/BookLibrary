@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from flask import render_template, url_for, flash, redirect, request, abort, g
+from flask import render_template, url_for, flash, redirect, request, abort, g, current_app
 from flask_login import login_required, current_user
 from app.models import User, Log, Permission, Role
 from .forms import EditProfileForm, AvatarEditForm, AvatarUploadForm, RoleChangeForm
@@ -98,9 +98,12 @@ def change_role(user_id):
         if role_change_form.validate_on_submit():
             the_user.role = Role.query.filter(Role.name == role_change_form.role.data).first()
             the_user.role_id = the_user.role.id
+            if the_user.email.lower() in [admin.lower() for admin in current_app.config['FLASKY_ADMIN']]:
+                flash(u"禁止修改初始管理员权限!")
+                return redirect(url_for("user.detail", user_id=user_id))
             db.session.add(the_user)
             db.session.commit()
             flash(u"用户权限更新成功！", "success")
-            return  redirect(url_for("user.detail", user_id=user_id))
+            return redirect(url_for("user.detail", user_id=user_id))
         return render_template('role_change.html', user=the_user, role_change_form=role_change_form,
                                title=u"更改用户权限")
