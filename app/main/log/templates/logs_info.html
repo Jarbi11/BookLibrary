@@ -37,7 +37,7 @@
                                     class="line-wrap">{{ log.borrow_timestamp.strftime('%d %B %Y - %H:%M:%S') }}</span>
                             </p>
                             <p class="visible-xs-block">应还日期: <span
-                                    class="line-wrap">{{ log.return_timestamp.strftime('%d %B %Y - %H:%M:%S') }}</span>
+                                    class="line-wrap" style="color:red">{{ log.return_timestamp.strftime('%d %B %Y - %H:%M:%S') }}</span>
                             </p>
                             {%- if current_user.is_authenticated -%}
                                 {% if current_user.id == log.user.id %}
@@ -54,7 +54,11 @@
                         <td class="hidden-xs"><a
                                 href="{{ url_for('book.detail',book_id=log.book.id) }}">{{ log.book.title }}</a></td>
                         <td class="hidden-xs">{{ log.borrow_timestamp.strftime('%d %B %Y - %H:%M:%S') }}</td>
+                        {%- if log.is_borrowed_overtime()-%}
+                        <td class="hidden-xs" style="color:red">{{ log.return_timestamp.strftime('%d %B %Y - %H:%M:%S') }}</td>
+                        {% else %}
                         <td class="hidden-xs">{{ log.return_timestamp.strftime('%d %B %Y - %H:%M:%S') }}</td>
+                        {% endif %}
                         {%- if current_user.is_authenticated -%}
                             <td class="hidden-xs">
                             {% if current_user.id == log.user.id %}

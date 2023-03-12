@@ -266,6 +266,10 @@ class Log(db.Model):
         self.return_timestamp = datetime.now() + timedelta(days=30)
         self.returned = 0
 
+    def is_borrowed_overtime(self):
+        return self.return_timestamp < datetime.now()
+
+
     def __repr__(self):
         return u'<%r - %r>' % (self.user.name, self.book.title)
 

@@ -48,6 +48,10 @@
                                 href="{{ url_for('user.index') }}">已注册用户</a></li>
                         <li {%- if request.path == url_for('log.index') %} class="active"{%- endif -%} ><a
                                 href="{{ url_for('log.index') }}">借阅信息</a></li>
+                        {%- if current_user.is_administrator-%}
+                        <li {%- if request.path == url_for('log.overtime') %} class="active"{%- endif -%} ><a
+                            href="{{ url_for('log.overtime') }}">超期借阅信息</a></li>
+                        {%- endif -%}
                     {%- endif -%}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
