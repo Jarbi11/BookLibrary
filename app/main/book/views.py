@@ -16,9 +16,8 @@ loop = asyncio.get_event_loop()
 
 
 async def get_book_information(title: str, isbn: str):
-    trans_url = current_app.config['DOUBAN_TRANS_SERVER']
     if not isbn and not title:
-        return
+        return None
     if isbn:
         return await trans_douban_api(context=isbn)
     if title:
@@ -26,7 +25,7 @@ async def get_book_information(title: str, isbn: str):
 
 
 async def trans_douban_api(context: str):
-    new_book = Book()
+    new_book = None
     search_url = f"http://{current_app.config['DOUBAN_TRANS_SERVER']}/search?text={context}"
     async with aiohttp.request(method="GET", url=search_url) as response:
         if response.status != 200:
@@ -179,7 +178,7 @@ def edit(book_id):
 @permission_required(Permission.ADD_BOOK)
 def get_book_information_from_douban():
     form = GetDoubanInfoForm()
-    new_book = Book()
+    new_book = None
     if form.validate_on_submit():
         isbn = form.isbn.data
         title = form.title.data
@@ -190,7 +189,9 @@ def get_book_information_from_douban():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
         new_book = loop.run_until_complete(asyncio.gather(get_book_information(isbn=isbn, title=title)))[0]
-
+        if not new_book:
+            flash(u'书籍 isbn %s, 书名%s 搜索失败!'%(form.isbn.data, form.title.data) , 'error')
+            return redirect(url_for('book.get_book_information_from_douban'))
         db.session.add(new_book)
         db.session.commit()
         flash(u'书籍 %s 已添加至图书馆!' % new_book.title, 'success')
