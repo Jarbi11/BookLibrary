@@ -29,14 +29,14 @@ async def trans_douban_api(context: str):
     search_url = f"http://{current_app.config['DOUBAN_TRANS_SERVER']}/search?text={context}"
     async with aiohttp.request(method="GET", url=search_url) as response:
         if response.status != 200:
-            raise Exception("network issue")
+            flash(u"response %d"%response.status)
             return None
         json_data = await response.json()
         if not json_data["success"]:
-            raise Exception("fetch failed")
+            flash(u"fetch data not success")
             return None
         if len(json_data["data"]) <= 0:
-            raise Exception("no results")
+            flash(u"fetch data not success")
             return None
         for data in json_data["data"]:
             if not data.get("extra_actions", None):
@@ -61,6 +61,7 @@ async def get_book_info_from_douban(new_book: Book):
     page_counts_pattern = r"<span class=\"pl\">页数.*</span>(.*)<br/>"
     prize_pattern = r"<span class=\"pl\">定价.*</span>(.*)<br/>"
     binding_pattern = r"<span class=\"pl\">装帧.*</span>(.*)<br/>"
+    intro_pattern = r"<div class=\"intro\">\n.*<p>(.*)</p></div>"
 
     def return_result(pattern, string) -> str:
         results = re.findall(pattern=pattern, string=string)
@@ -70,7 +71,9 @@ async def get_book_info_from_douban(new_book: Book):
 
     async with aiohttp.request(method="GET", url=new_book.douban_url) as response:
         if response.status != 200:
-            raise Exception("network issue")
+
+            flash(u"response %d"%response.status)
+            return None
         context = await response.text()
 
         new_book.isbn = return_result(pattern=isbn_pattern, string=context)
@@ -80,6 +83,7 @@ async def get_book_info_from_douban(new_book: Book):
         new_book.pages = return_result(pattern=page_counts_pattern, string=context)
         new_book.price = return_result(pattern=prize_pattern, string=context)
         new_book.binding = return_result(pattern=binding_pattern, string=context)
+        new_book.summary = return_result(pattern=intro_pattern, string=context)
         return new_book
 
 
