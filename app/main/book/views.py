@@ -25,16 +25,19 @@ async def get_book_information(title: str, isbn: str):
 
 
 async def trans_douban_api(context: str):
-    new_book = None
+    new_book = Book()
     search_url = f"http://{current_app.config['DOUBAN_TRANS_SERVER']}/search?text={context}"
     async with aiohttp.request(method="GET", url=search_url) as response:
         if response.status != 200:
             raise Exception("network issue")
+            return None
         json_data = await response.json()
         if not json_data["success"]:
             raise Exception("fetch failed")
+            return None
         if len(json_data["data"]) <= 0:
             raise Exception("no results")
+            return None
         for data in json_data["data"]:
             if not data.get("extra_actions", None):
                 continue
