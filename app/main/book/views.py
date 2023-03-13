@@ -97,8 +97,7 @@ def index():
         search_word = search_word.strip()
         the_books = the_books.filter(db.or_(
             Book.title.ilike(u"%%%s%%" % search_word), Book.author.ilike(u"%%%s%%" % search_word), Book.isbn.ilike(
-                u"%%%s%%" % search_word), Book.tags.any(Tag.name.ilike(u"%%%s%%" % search_word)), Book.subtitle.ilike(
-                u"%%%s%%" % search_word))).outerjoin(Log).group_by(Book.id).order_by(db.func.count(Log.id).desc())
+                u"%%%s%%" % search_word), Book.tags.any(Tag.name.ilike(u"%%%s%%" % search_word)))).outerjoin(Log).group_by(Book.id).order_by(db.func.count(Log.id).desc())
         search_form.search.data = search_word
     else:
         the_books = Book.query.order_by(Book.id.desc())
