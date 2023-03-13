@@ -28,7 +28,7 @@ new_logs = [
 
 db.session.add_all(new_users)
 db.session.add_all(new_books)
-db.session.add_all(new_logs)
+# db.session.add_all(new_logs)
 db.session.commit()
 
 app_ctx.pop()

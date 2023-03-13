@@ -29,7 +29,7 @@
                     <div class="btn-group">
                         <a class="btn btn-info" href="{{url_for('user.edit',user_id=user.id) }}">编辑信息</a>
                         <a type="button" class="btn btn-warning" href="{{ url_for('auth.change_password',user_id=user.id) }}">修改密码</a>
-                        <a type="button" class="btn btn-danger" href="{a{url_for()}a}">删除用户</a>
+                        <a type="button" class="btn btn-danger" href="{{url_for('user.delete',  user_id=user.id)}}">删除用户</a>
                     </div>
                 </td>
                 {% endif %}
