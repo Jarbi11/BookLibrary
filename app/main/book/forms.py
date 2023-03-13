@@ -32,8 +32,7 @@ class EditBookForm(FlaskForm):
 
 
 class GetDoubanInfoForm(FlaskForm):
-    title = StringField(u"书名",
-                        validators=[Length(1, 128, message=u"长度为1到128个字符")])
+    title = StringField(u"书名")
     isbn = StringField(u"ISBN")
     submit = SubmitField(u"从豆瓣加载信息")
 
