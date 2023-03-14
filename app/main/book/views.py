@@ -3,88 +3,16 @@ import re
 
 from app import db
 from app.models import Book, Log, Comment, Permission, Tag, book_tag
-from flask import render_template, url_for, flash, redirect, request, abort, current_app
+from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user
-import asyncio, aiohttp
-import requests
+import asyncio
 from . import book
-from .forms import SearchForm, EditBookForm, AddBookForm, GetDoubanInfoForm
+from .forms import SearchForm, EditBookForm,  GetDoubanInfoForm
+from .douban_api import get_book_information
 from ..comment.forms import CommentForm
 from ..decorators import admin_required, permission_required
 
 loop = asyncio.get_event_loop()
-
-
-async def get_book_information(title: str, isbn: str):
-    if not isbn and not title:
-        return None
-    if isbn:
-        return await trans_douban_api(context=isbn)
-    if title:
-        return await trans_douban_api(context=title)
-
-
-async def trans_douban_api(context: str):
-    new_book = Book()
-    search_url = f"http://{current_app.config['DOUBAN_TRANS_SERVER']}/search?text={context}"
-    async with aiohttp.request(method="GET", url=search_url) as response:
-        if response.status != 200:
-            flash(u"response %d"%response.status)
-            return None
-        json_data = await response.json()
-        if not json_data["success"]:
-            flash(u"fetch data not success")
-            return None
-        if len(json_data["data"]) <= 0:
-            flash(u"fetch data not success")
-            return None
-        for data in json_data["data"]:
-            if not data.get("extra_actions", None):
-                continue
-            new_book.title = data["title"]
-            new_book.douban_rating = "0.0"
-            if data.get("rating", None):
-                new_book.douban_rating = str(data["rating"].get("value", 0.0))
-            new_book.image = data.get("cover_url", "")
-            new_book.douban_url = data.get("url", "")
-            return await get_book_info_from_douban(new_book)
-
-
-async def get_book_info_from_douban(new_book: Book):
-    if not new_book.douban_url:
-        return new_book
-
-    isbn_pattern = r"<span class=\"pl\">ISBN.*</span>(.*)<br/>"
-    author_pattern = r"<a class=.* href=.*/author/\d+.*>(.*)</a>"
-    publisher_pattern = r"reg: <a href=.*press.*>(.*)</a>"
-    publish_date_pattern = r"<span class=\"pl\">出版.*</span>(.*)<br/>"
-    page_counts_pattern = r"<span class=\"pl\">页数.*</span>(.*)<br/>"
-    prize_pattern = r"<span class=\"pl\">定价.*</span>(.*)<br/>"
-    binding_pattern = r"<span class=\"pl\">装帧.*</span>(.*)<br/>"
-    intro_pattern = r"<div class=\"intro\">\n.*<p>(.*)</p></div>"
-
-    def return_result(pattern, string) -> str:
-        results = re.findall(pattern=pattern, string=string)
-        if len(results) <= 0:
-            return ""
-        return str(results[0]).strip()
-
-    async with aiohttp.request(method="GET", url=new_book.douban_url) as response:
-        if response.status != 200:
-
-            flash(u"response %d"%response.status)
-            return None
-        context = await response.text()
-
-        new_book.isbn = return_result(pattern=isbn_pattern, string=context)
-        new_book.author = return_result(pattern=author_pattern, string=context)
-        new_book.publisher = return_result(pattern=publisher_pattern, string=context)
-        new_book.pubdate = return_result(pattern=publish_date_pattern, string=context)
-        new_book.pages = return_result(pattern=page_counts_pattern, string=context)
-        new_book.price = return_result(pattern=prize_pattern, string=context)
-        new_book.binding = return_result(pattern=binding_pattern, string=context)
-        new_book.summary = return_result(pattern=intro_pattern, string=context)
-        return new_book
 
 
 @book.route('/')
@@ -101,7 +29,8 @@ def index():
         search_word = search_word.strip()
         the_books = the_books.filter(db.or_(
             Book.title.ilike(u"%%%s%%" % search_word), Book.author.ilike(u"%%%s%%" % search_word), Book.isbn.ilike(
-                u"%%%s%%" % search_word), Book.tags.any(Tag.name.ilike(u"%%%s%%" % search_word)))).outerjoin(Log).group_by(Book.id).order_by(db.func.count(Log.id).desc())
+                u"%%%s%%" % search_word), Book.tags.any(Tag.name.ilike(u"%%%s%%" % search_word)))).outerjoin(
+            Log).group_by(Book.id).order_by(db.func.count(Log.id).desc())
         search_form.search.data = search_word
     else:
         the_books = Book.query.order_by(Book.id.desc())
@@ -164,8 +93,8 @@ def edit(book_id):
     form.isbn.data = book.isbn
     form.title.data = book.title
     form.author.data = book.author
-    book.douban_rating = form.douban_rating.data
-    book.douban_url = form.douban_url.data
+    book.douban_rating = book.douban_rating
+    book.douban_url = book.douban_url
     form.translator.data = book.translator
     form.publisher.data = book.publisher
     form.image.data = book.image
@@ -184,25 +113,26 @@ def edit(book_id):
 @permission_required(Permission.ADD_BOOK)
 def get_book_information_from_douban():
     form = GetDoubanInfoForm()
-    new_book = None
     if form.validate_on_submit():
         isbn = form.isbn.data
         title = form.title.data
+        douban_id = form.douban_id.data
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError as er:
             print(er.args[0], "create a new EventLoop")
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-        new_book = loop.run_until_complete(asyncio.gather(get_book_information(isbn=isbn, title=title)))[0]
+        new_book = loop.run_until_complete(asyncio.gather(get_book_information(isbn=isbn, title=title,
+                                                                               douban_id=douban_id)))[0]
         if not new_book:
-            flash(u'书籍 isbn %s, 书名%s 搜索失败!'%(form.isbn.data, form.title.data) , 'error')
+            flash(u'书籍 isbn %s, 书名%s 搜索失败!' % (form.isbn.data, form.title.data), 'error')
             return redirect(url_for('book.get_book_information_from_douban'))
         db.session.add(new_book)
         db.session.commit()
         flash(u'书籍 %s 已添加至图书馆!' % new_book.title, 'success')
         return redirect(url_for('book.detail', book_id=new_book.id))
-    return render_template("book_edit.html", form=form, title=u"查找新书信息")
+    return render_template("book_edit.html", form=form, title=u"查找新书信息(以下信息任填一种即可)")
 
 
 @book.route('/add/', methods=['GET', 'POST'])

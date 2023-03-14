@@ -30,17 +30,24 @@ class EditBookForm(FlaskForm):
     catalog = PageDownField(u"目录")
     submit = SubmitField(u"保存更改")
 
-
-class GetDoubanInfoForm(FlaskForm):
-    title = StringField(u"书名")
-    isbn = StringField(u"ISBN")
-    submit = SubmitField(u"从豆瓣加载信息")
-
-
-class AddBookForm(EditBookForm):
     def validate_isbn(self, filed):
         if Book.query.filter_by(isbn=filed.data).count():
             raise ValidationError(u'已经存在相同的ISBN,无法录入,请仔细核对是否已库存该书籍.')
+
+
+class GetDoubanInfoForm(FlaskForm):
+    douban_id = StringField(u"豆瓣ID")
+    isbn = StringField(u"ISBN")
+    title = StringField(u"书名")
+    submit = SubmitField(u"从豆瓣加载信息")
+
+    def validate_isbn(self, filed):
+        if Book.query.filter_by(isbn=filed.data).count():
+            raise ValidationError(u'已经存在相同的ISBN,无法录入,请仔细核对是否已库存该书籍.')
+
+    def validate_douban_id(self, filed):
+        if Book.query.filter_by(douban_url=f"https://book.douban.com/subject/{filed.data}/").count():
+            raise ValidationError(u'已经存在相同的书籍,无法录入,请仔细核对是否已库存该书籍.')
 
 
 class SearchForm(FlaskForm):
