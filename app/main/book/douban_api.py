@@ -2,6 +2,7 @@ from app.models import Book
 from flask import flash, current_app
 import aiohttp
 
+ssl_conn = aiohttp.TCPConnector(ssl=False)
 
 async def get_book_information(title: str, isbn: str, douban_id:str):
     if not isbn and not title and not douban_id:
@@ -31,8 +32,7 @@ async def get_information_by_isbn_or_douban_id(douban_id:str, isbn: str ):
     new_book = Book()
     context = f"subject/{douban_id}" if douban_id else f"isbn/{isbn}"
     book_url = f"{current_app.config['DOUBAN_TRANS_SERVER']}/{context}"
-    async with aiohttp.request(method="GET", url=book_url,
-                               connector=aiohttp.TCPConnector(verify_ssl=False)) as response:
+    async with aiohttp.request(method="GET", url=book_url, connector=ssl_conn) as response:
         if response.status != 200:
             flash(u"response %d" % response.status)
             return None
@@ -65,8 +65,7 @@ async def get_information_by_isbn_or_douban_id(douban_id:str, isbn: str ):
 
 async def get_douban_info_page(context: str):
     search_url = f"{current_app.config['DOUBAN_TRANS_SERVER']}/search?text={context}"
-    async with aiohttp.request(method="GET", url=search_url,
-                               connector=aiohttp.TCPConnector(verify_ssl=False)) as response:
+    async with aiohttp.request(method="GET", url=search_url, connector=ssl_conn) as response:
         if response.status != 200:
             flash(u"response %d" % response.status)
             return None
