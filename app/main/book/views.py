@@ -135,36 +135,6 @@ def get_book_information_from_douban():
     return render_template("book_edit.html", form=form, title=u"查找新书信息(以下信息任填一种即可)")
 
 
-@book.route('/add/', methods=['GET', 'POST'])
-@permission_required(Permission.ADD_BOOK)
-def add():
-    form = AddBookForm()
-    form.numbers.data = 1
-    if form.validate_on_submit():
-        new_book = Book(
-            isbn=form.isbn.data,
-            title=form.title.data,
-            author=form.author.data,
-            douban_url=form.douban_url,
-            douban_rating=form.douban_rating,
-            translator=form.translator.data,
-            publisher=form.publisher.data,
-            image=form.image.data,
-            pubdate=form.pubdate.data,
-            tags_string=form.tags.data,
-            pages=form.pages.data,
-            price=form.price.data,
-            binding=form.binding.data,
-            numbers=form.numbers.data,
-            summary=form.summary.data or "",
-            catalog=form.catalog.data or "")
-        db.session.add(new_book)
-        db.session.commit()
-        flash(u'书籍 %s 已添加至图书馆!' % new_book.title, 'success')
-        return redirect(url_for('book.detail', book_id=new_book.id))
-    return render_template("book_edit.html", form=form, title=u"添加新书")
-
-
 @book.route('/<int:book_id>/delete/')
 @permission_required(Permission.DELETE_BOOK)
 def delete(book_id):

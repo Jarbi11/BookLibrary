@@ -1,10 +1,13 @@
 from app.models import Book
 from flask import flash, current_app
 import aiohttp
+import asyncio
 
-ssl_conn = aiohttp.TCPConnector(ssl=False)
+ssl_conn = aiohttp.TCPConnector(verify_ssl=False)
+loop = asyncio.get_event_loop()
 
-async def get_book_information(title: str, isbn: str, douban_id:str):
+
+async def get_book_information(title: str, isbn: str, douban_id: str):
     if not isbn and not title and not douban_id:
         return None
     if isbn or douban_id:
@@ -28,11 +31,18 @@ def convert_list_to_string(data_list: list, end: str):
     return ret_str
 
 
-async def get_information_by_isbn_or_douban_id(douban_id:str, isbn: str ):
+async def get_information_by_isbn_or_douban_id(douban_id: str, isbn: str):
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError as er:
+        print(er.args[0], "create a new EventLoop")
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     new_book = Book()
     context = f"subject/{douban_id}" if douban_id else f"isbn/{isbn}"
     book_url = f"{current_app.config['DOUBAN_TRANS_SERVER']}/{context}"
-    async with aiohttp.request(method="GET", url=book_url, connector=ssl_conn) as response:
+    async with aiohttp.request(method="GET", url=book_url, connector=aiohttp.TCPConnector(verify_ssl=False),
+                               loop=loop) as response:
         if response.status != 200:
             flash(u"response %d" % response.status)
             return None
@@ -64,8 +74,15 @@ async def get_information_by_isbn_or_douban_id(douban_id:str, isbn: str ):
 
 
 async def get_douban_info_page(context: str):
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError as er:
+        print(er.args[0], "create a new EventLoop")
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     search_url = f"{current_app.config['DOUBAN_TRANS_SERVER']}/search?text={context}"
-    async with aiohttp.request(method="GET", url=search_url, connector=ssl_conn) as response:
+    async with aiohttp.request(method="GET", url=search_url, connector=aiohttp.TCPConnector(verify_ssl=False),
+                               loop=loop) as response:
         if response.status != 200:
             flash(u"response %d" % response.status)
             return None
@@ -83,4 +100,4 @@ async def get_douban_info_page(context: str):
             if not douban_id:
                 flash(u"didn't get the information page")
                 return None
-            return await get_information_by_isbn_or_douban_id(douban_id)
+            return await get_information_by_isbn_or_douban_id(douban_id=douban_id, isbn="")
