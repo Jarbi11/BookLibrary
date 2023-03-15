@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
+import re
+
 from app import db
 from app.models import User, Permission
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm
@@ -32,6 +34,9 @@ def logout():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
+        if len(re.findall(string=form.email.data, pattern=current_app.config['REGISTRATION_EMAIL_PATTERN'])) <= 0:
+            flash(u"注册失败！请使用组织邮箱进行注册", "danger")
+            return render_template('register.html', form=form, title=u"新用户注册")
         the_user = User(email=form.email.data,
                         name=form.name.data,
                         password=form.password.data)

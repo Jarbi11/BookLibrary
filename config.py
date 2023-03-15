@@ -11,10 +11,12 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + DATABASE
 
 SECRET_KEY = 'you-will-never-guess'
 
+REGISTRATION_EMAIL_PATTERN = r".*@.*\.com$"
+
 FLASKY_ADMIN = [
     'admin@library.com',
 ]
 
-DOUBAN_TRANS_SERVER = "127.0.0.1:3000"
+DOUBAN_TRANS_SERVER = "http://127.0.0.1:3000"
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
