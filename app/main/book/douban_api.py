@@ -83,4 +83,4 @@ async def get_douban_info_page(context: str):
             if not douban_id:
                 flash(u"didn't get the information page")
                 return None
-            return await get_information_by_isbn_or_douban_id(douban_id)
+            return await get_information_by_isbn_or_douban_id(douban_id=douban_id, isbn="")
