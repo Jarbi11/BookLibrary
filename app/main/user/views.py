@@ -107,17 +107,3 @@ def change_role(user_id):
             return redirect(url_for("user.detail", user_id=user_id))
         return render_template('role_change.html', user=the_user, role_change_form=role_change_form,
                                title=u"更改用户权限")
-
-@user.route('/<int:user_id>/delete/', methods=['GET', 'POST'])
-@login_required
-def delete(user_id):
-    if not current_user.is_administrator():
-        abort(403)
-    else:
-        the_user = User.query.get_or_404(user_id)
-        if the_user.email.lower() in [admin.lower() for admin in current_app.config['FLASKY_ADMIN']]:
-            flash(u"禁止删除初始管理员账户!")
-            return redirect(url_for("user.index"))
-        del_user = db.session.query(User).filter(User.id == user_id).delete()
-        db.session.commit()
-        return redirect(url_for("user.index"))

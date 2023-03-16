@@ -3,10 +3,10 @@ import re
 
 from app import db
 from app.models import User, Permission
-from flask import render_template, url_for, flash, redirect, request, current_app
+from flask import render_template, url_for, flash, redirect, request, current_app, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
-from .forms import LoginForm, RegistrationForm, ChangePasswordForm
+from .forms import LoginForm, RegistrationForm, ChangePasswordForm, UserRemoveForm
 
 
 @auth.route('/login/', methods=['GET', 'POST'])
@@ -64,3 +64,31 @@ def change_password(user_id):
         flash(u'密码更新成功!', 'info')
         return redirect(url_for('user.detail', user_id=user.id))
     return render_template('user_edit.html', form=form, user=user, title=u"修改密码")
+
+
+@auth.route('/remove_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def remove_user(user_id):
+    form = UserRemoveForm()
+    user = db.session.query(User).filter(User.id == user_id).first()
+    if not form.validate_on_submit():
+        return render_template('user_remove.html', form=form, user=user, title=u"删除用户")
+
+    if not current_user.is_administrator():
+        flash(u"您没有删除用户的权限!请联系管理员", "danger")
+        return render_template('user_remove.html', form=form, user=user, title=u"删除用户")
+
+    if user.email != form.email.data:
+        flash(u"请输入正确的邮箱号码", "danger")
+        return render_template('user_remove.html', form=form, user=user, title=u"删除用户")
+
+    if user.email.lower() in [admin.lower() for admin in current_app.config['FLASKY_ADMIN']]:
+        flash(u"禁止删除初始管理员账户!", "danger")
+        return render_template('user_remove.html', form=form, user=user, title=u"删除用户")
+    if user.have_borrowed_book():
+        flash(u"该用户有书未归还，请待其归还后重试", "danger")
+        return render_template('user_remove.html', form=form, user=user, title=u"删除用户")
+    del_user = db.session.query(User).filter(User.id == user_id).delete()
+    db.session.commit()
+    flash(u"用户删除成功", "success")
+    return redirect(url_for("user.index"))

@@ -70,6 +70,9 @@ class User(UserMixin, db.Model):
     def can_borrow_book(self):
         return self.logs.filter(Log.returned == 0, Log.return_timestamp < datetime.now()).count() == 0
 
+    def have_borrowed_book(self):
+        return self.logs.filter(Log.returned == 0).count() > 0
+
     def borrow_book(self, book):
         if self.logs.filter(Log.returned == 0, Log.return_timestamp < datetime.now()).count() > 0:
             return False, u"无法借阅,你有超期的图书未归还"
@@ -270,7 +273,6 @@ class Log(db.Model):
 
     def is_borrowed_overtime(self):
         return self.return_timestamp < datetime.now()
-
 
     def __repr__(self):
         return u'<%r - %r>' % (self.user.name, self.book.title)

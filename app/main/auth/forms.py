@@ -41,3 +41,11 @@ class ChangePasswordForm(FlaskForm):
     #     from flask_login import current_user
     #     if not current_user.verify_password(filed.data):
     #         raise ValidationError(u'原密码错误')
+
+
+class UserRemoveForm(FlaskForm):
+    email = StringField('Email',
+                        validators=[DataRequired(message=u"如需删除该用户，请输入该用户的email"), Length(1, 64),
+                                    Email(message=u"你确定这是 Email ?")])
+    submit = SubmitField(u"确认删除")
+
