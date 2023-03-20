@@ -70,19 +70,27 @@ class User(UserMixin, db.Model):
     def can_borrow_book(self):
         return self.logs.filter(Log.returned == 0, Log.return_timestamp < datetime.now()).count() == 0
 
+    def borrowable_book_counts(self) -> int:
+        return current_app.config['MAX_BORROWED_BOOK_PER_PERSON'] - self.logs.filter(Log.returned == 0).count()
+
+    def is_borrowed_book_max(self):
+        return self.borrowable_book_counts() <= 0
+
     def have_borrowed_book(self):
         return self.logs.filter(Log.returned == 0).count() > 0
 
     def borrow_book(self, book):
         if self.logs.filter(Log.returned == 0, Log.return_timestamp < datetime.now()).count() > 0:
             return False, u"无法借阅,你有超期的图书未归还"
+        if self.is_borrowed_book_max():
+            return False, u"无法借阅，你个人借阅数量已达上限"
         if self.borrowing(book):
             return False, u'貌似你已经借阅了这本书!!'
         if not book.can_borrow():
             return False, u'这本书太火了,我们已经没有馆藏了,请等待别人归还以后再来借阅'
 
         db.session.add(Log(self, book))
-        return True, u'你成功GET到了一本 %s' % book.title
+        return True, u'你成功GET到了一本 %s, 个人可借阅数量剩余 %d' % (book.title, self.borrowable_book_counts())
 
     def return_book(self, log):
         if log.returned == 1 or log.user_id != self.id:
@@ -90,7 +98,7 @@ class User(UserMixin, db.Model):
         log.returned = 1
         log.return_timestamp = datetime.now()
         db.session.add(log)
-        return True, u'你归还了一本 %s' % log.book.title
+        return True, u'你归还了一本 %s, 个人可借阅数量剩余 %d' % (log.book.title, self.borrowable_book_counts())
 
     def avatar_url(self, _external=False):
         if self.avatar:
