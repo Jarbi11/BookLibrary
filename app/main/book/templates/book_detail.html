@@ -15,10 +15,8 @@
                 <img class="img-responsive" src="{{ book.image }}" alt="{{ book.title~' 封面' }}">
             {%- endif -%}
             <ul class="list-group">
+                <li class="list-group-item">图书编号: {{ book.book_id}}</li>
                 <li class="list-group-item">ISBN: {{ book.isbn }}</li>
-                {%- if book.origin_title -%}
-                    <li class="list-group-item">原作名: {{ book.origin_title }}</li>
-                {%- endif -%}
                 {%- if book.author -%}
                     <li class="list-group-item">作者: {{ book.author }}</li>
                 {%- endif -%}

@@ -9,7 +9,7 @@ db.create_all()
 Role.insert_roles()
 
 new_users = [
-    User(name=u'lib_admin', email='admin@library.com', password='admin_lib', major='administrator',
+    User(name=u'lib_admin', email='admin@library.com', password='admin_lib',
          headline=u"admin", about_me=u"admin"),
 
     User(name=u'test0', email='test0@test.com', password='123456', role_id=3),

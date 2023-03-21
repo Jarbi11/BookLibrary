@@ -16,6 +16,7 @@
         <caption>热门图书 Top 5</caption>
         <thead class="hidden-xs">
         <tr>
+            <th>编号</th>
             <th>书名</th>
             <th>作者</th>
             <th>ISBN</th>
@@ -29,6 +30,7 @@
         <tbody>
         {% for book in books %}
             <tr class="animated fadeInLeft delay-{{ loop.index0 }}">
+                <td class="hidden-xs">{{ book.book_id}}</td>
                 <td><a href="{{ url_for('book.detail',book_id=book.id) }}">{{ book.title }}</a>
                     <p class="visible-xs-block">{{ book.author }}</p>
                     <p class="visible-xs-block">{{ "馆藏/可借: "~ book.numbers }} / {{ book.can_borrow_number() }}</p></td>

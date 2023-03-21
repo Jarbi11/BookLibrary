@@ -9,7 +9,7 @@ from app import avatars
 
 class EditProfileForm(FlaskForm):
     name = StringField(u'用户名', validators=[DataRequired(message=u"该项忘了填写了!"), Length(1, 64, message=u"长度为1到64个字符")])
-    major = StringField(u'主修专业', validators=[Length(0, 128, message=u"长度为0到128个字符")])
+    # major = StringField(u'主修专业', validators=[Length(0, 128, message=u"长度为0到128个字符")])
     headline = StringField(u'一句话介绍自己', validators=[Length(0, 32, message=u"长度为32个字符以内")])
     about_me = PageDownField(u"个人简介")
     submit = SubmitField(u"保存更改")

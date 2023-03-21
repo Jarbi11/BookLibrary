@@ -10,6 +10,7 @@ from wtforms.validators import Length, DataRequired, Regexp
 class EditBookForm(FlaskForm):
     title = StringField(u"书名",
                         validators=[DataRequired(message=u"该项忘了填写了!"), Length(1, 128, message=u"长度为1到128个字符")])
+    book_id = IntegerField(u"图书编号")
     isbn = StringField(u"ISBN",
                        validators=[DataRequired(message=u"该项忘了填写了!"),
                                    Regexp('[0-9]{8,13}', message=u"ISBN必须是8-13位数字")])
@@ -29,10 +30,6 @@ class EditBookForm(FlaskForm):
     summary = PageDownField(u"内容简介")
     catalog = PageDownField(u"目录")
     submit = SubmitField(u"保存更改")
-
-    def validate_isbn(self, filed):
-        if Book.query.filter_by(isbn=filed.data).count():
-            raise ValidationError(u'已经存在相同的ISBN,无法录入,请仔细核对是否已库存该书籍.')
 
 
 class GetDoubanInfoForm(FlaskForm):

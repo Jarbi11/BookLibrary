@@ -16,7 +16,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(64), unique=True)
     name = db.Column(db.String(64))
     password_hash = db.deferred(db.Column(db.String(128)))
-    major = db.Column(db.String(128))
+    # major = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     headline = db.Column(db.String(32), nullable=True)
     about_me = db.deferred(db.Column(db.Text, nullable=True))
@@ -185,7 +185,8 @@ class Role(db.Model):
 class Book(db.Model):
     __tablename__ = 'books'
     id = db.Column(db.Integer, primary_key=True)
-    isbn = db.Column(db.String(16), unique=True)
+    book_id = db.Column(db.Integer, unique=True)
+    isbn = db.Column(db.String(16))
     title = db.Column(db.String(128))
     # origin_title = db.Column(db.String(128))
     # subtitle = db.Column(db.String(128))

@@ -7,7 +7,7 @@ from flask import render_template, url_for, flash, redirect, request, abort
 from flask_login import current_user
 import asyncio
 from . import book
-from .forms import SearchForm, EditBookForm,  GetDoubanInfoForm
+from .forms import SearchForm, EditBookForm, GetDoubanInfoForm
 from .douban_api import get_book_information
 from ..comment.forms import CommentForm
 from ..decorators import admin_required, permission_required
@@ -72,6 +72,7 @@ def edit(book_id):
     if form.validate_on_submit():
         book.isbn = form.isbn.data
         book.title = form.title.data
+        book.book_id = form.book_id.data
         book.author = form.author.data
         book.douban_rating = form.douban_rating.data
         book.douban_url = form.douban_url.data
@@ -91,10 +92,11 @@ def edit(book_id):
         flash(u'书籍资料已保存!', 'success')
         return redirect(url_for('book.detail', book_id=book_id))
     form.isbn.data = book.isbn
+    form.book_id = book.book_id
     form.title.data = book.title
     form.author.data = book.author
-    book.douban_rating = book.douban_rating
-    book.douban_url = book.douban_url
+    form.douban_rating = book.douban_rating
+    form.douban_url = book.douban_url
     form.translator.data = book.translator
     form.publisher.data = book.publisher
     form.image.data = book.image
@@ -123,15 +125,8 @@ def get_book_information_from_douban():
             print(er.args[0], "create a new EventLoop")
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
-        new_book = loop.run_until_complete(asyncio.gather(get_book_information(isbn=isbn, title=title,
-                                                                               douban_id=douban_id)))[0]
-        if not new_book:
-            flash(u'书籍 isbn %s, 书名%s 搜索失败!' % (form.isbn.data, form.title.data), 'error')
-            return redirect(url_for('book.get_book_information_from_douban'))
-        db.session.add(new_book)
-        db.session.commit()
-        flash(u'书籍 %s 已添加至图书馆!' % new_book.title, 'success')
-        return redirect(url_for('book.detail', book_id=new_book.id))
+        new_books = loop.run_until_complete(asyncio.gather(get_book_information(title=title, isbns=isbn,
+                                                                                douban_ids=douban_id)))[0]
     return render_template("book_edit.html", form=form, title=u"查找新书信息(以下信息任填一种即可)")
 
 

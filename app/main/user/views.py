@@ -43,7 +43,7 @@ def edit(user_id):
         form = EditProfileForm()
         if form.validate_on_submit():
             the_user.name = form.name.data
-            the_user.major = form.major.data
+            # the_user.major = form.major.data
             the_user.headline = form.headline.data
             the_user.about_me = form.about_me.data
             db.session.add(the_user)
@@ -51,7 +51,7 @@ def edit(user_id):
             flash(u'资料更新成功!', "info")
             return redirect(url_for('user.detail', user_id=user_id))
         form.name.data = the_user.name
-        form.major.data = the_user.major
+        # form.major.data = the_user.major
         form.headline.data = the_user.headline
         form.about_me.data = the_user.about_me
 
