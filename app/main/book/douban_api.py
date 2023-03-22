@@ -72,11 +72,11 @@ async def get_information_by_isbn_or_douban_id(context: str):
     async with aiohttp.request(method="GET", url=book_url, connector=aiohttp.TCPConnector(verify_ssl=False),
                                loop=loop) as response:
         if response.status != 200:
-            flash(u"response %d" % response.status,"danger")
+            flash(u"response %d" % response.status, "danger")
             return None
         json_data = await response.json()
         if not json_data["success"]:
-            flash(u"fetch data not success","danger")
+            flash(u"fetch data not success", "danger")
             return None
         data = json_data["data"]
         new_book.title = data["title"]
@@ -86,7 +86,7 @@ async def get_information_by_isbn_or_douban_id(context: str):
         new_book.isbn = data["isbn"]
         new_book.author = convert_list_to_string(data["author"], ",")
         new_book.translator = convert_list_to_string(data["translator"], ",")
-        new_book.publisher = data["publish"]
+        new_book.publisher = convert_list_to_string(data["publish"], ",")
         new_book.pubdate = data["publishDate"]
         new_book.pages = data["pages"]
         new_book.price = data["price"]
