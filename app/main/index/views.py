@@ -17,6 +17,7 @@ def index():
     the_books = Book.query
     if not current_user.can(Permission.UPDATE_BOOK_INFORMATION):
         the_books = the_books.filter_by(hidden=0)
+    the_books = the_books.order_by(Book.book_id.asc())
     popular_books = the_books.outerjoin(Log).group_by(Book.id).order_by(db.func.count(Log.id).desc()).limit(5)
     popular_users = User.query.outerjoin(Log).group_by(User.id).order_by(db.func.count(Log.id).desc()).limit(5)
     recently_comments = Comment.query.filter_by(deleted=0).order_by(Comment.edit_timestamp.desc()).limit(5)

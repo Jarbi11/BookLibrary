@@ -33,9 +33,9 @@ def index():
             Log).group_by(Book.id).order_by(db.func.count(Log.id).desc())
         search_form.search.data = search_word
     else:
-        the_books = Book.query.order_by(Book.id.desc())
+        the_books = Book.query.order_by(Book.book_id.asc())
 
-    pagination = the_books.paginate(page, per_page=8)
+    pagination = the_books.paginate(page, per_page=10)
     result_books = pagination.items
     return render_template("book.html", books=result_books, pagination=pagination, search_form=search_form,
                            title=u"书籍清单")
